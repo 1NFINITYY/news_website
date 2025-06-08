@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../transition"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "news_website"
+	}
+}
