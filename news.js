@@ -1,33 +1,48 @@
 const boxes = document.querySelectorAll('.select');
-const search_button= document.querySelector('#search-button');
-const select=document.getElementById("select")
+const search_button = document.querySelector('#search-button');
+const input = document.getElementById("input");
+const cardsContainer = document.getElementById('card-container');
+const template = document.getElementById('card-template');
+const image = document.getElementById("image");
 
-const url='https://newsapi.org/v2/everything?q=';
-const api_key="7d64ae4c10354faa9e62a2e3ef04b522";
+const url = 'https://newsapi.org/v2/everything?q=';
+const api_key = "7d64ae4c10354faa9e62a2e3ef04b522";
 
-window.addEventListener('load',()=> fetchNews("India"));
+window.addEventListener('load', () => fetchNews("India"));
 
+async function fetchNews(query) {
+    try {
+        const res = await fetch(`${url}${encodeURIComponent(query)}&apiKey=${api_key}`);
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        console.log("API response:", data);
 
-async function fetchNews(query){
-     const res = await fetch(`${url}${query}&apiKey=${api_key}`);
-     const data=await res.json();
-     bindData(data.articles);
+        if (!data.articles || !Array.isArray(data.articles)) {
+            console.error("No articles found in API response", data);
+            cardsContainer.innerHTML = `<p>No news found for "${query}"</p>`;
+            return;
+        }
+
+        bindData(data.articles);
+    } catch (error) {
+        console.error("Failed to fetch news:", error);
+        cardsContainer.innerHTML = `<p>Error fetching news. Please try again later.</p>`;
+    }
 }
 
-function bindData(articles){
-    const cardsContainer=document.getElementById('card-container'); 
-    const template=document.getElementById('card-template'); 
+function bindData(articles) {
+    cardsContainer.innerHTML = "";
 
-    cardsContainer.innerHTML="";
-
-    articles.forEach((article) => {
+    articles.forEach(article => {
         if (!article.urlToImage) return;
         const cardClone = template.content.cloneNode(true);
         fillDataInCard(cardClone, article);
         cardsContainer.appendChild(cardClone);
     });
-
 }
+
 function fillDataInCard(cardClone, article) {
     const newsImg = cardClone.querySelector("#news-img");
     const newsTitle = cardClone.querySelector("#news-title");
@@ -35,51 +50,36 @@ function fillDataInCard(cardClone, article) {
     const newsDesc = cardClone.querySelector("#news-desc");
 
     newsImg.src = article.urlToImage;
-    newsTitle.innerHTML = article.title;
-    newsDesc.innerHTML = article.description;
+    newsTitle.textContent = article.title || "No Title";
+    newsDesc.textContent = article.description || "No Description";
 
     const date = new Date(article.publishedAt).toLocaleString("en-US", {
         timeZone: "Asia/Jakarta",
     });
 
-    newsSource.innerHTML = `${article.source.name} · ${date}`;
+    newsSource.textContent = `${article.source.name} · ${date}`;
 
     cardClone.firstElementChild.addEventListener("click", () => {
         window.open(article.url, "_blank");
     });
 }
 
-const input=document.getElementById("input");
+search_button.addEventListener('click', () => {
+    const query = input.value.trim() || "India";
+    fetchNews(query);
 
-search_button.addEventListener('click',()=>{
-        if(input.value==""){
-            fetchNews("India");
-        }
-        else{
-            fetchNews(input.value);
-        }
-    boxes.forEach((box)=>{
-        box.classList.remove('selected');
-    });
-    
-})
+    boxes.forEach(box => box.classList.remove('selected'));
+});
 
-boxes.forEach((box)=>{
-    box.addEventListener('click',()=>{
-        
-        boxes.forEach((box)=>{
-            box.classList.remove('selected');
-        });
-        fetchNews(box.innerHTML)
+boxes.forEach(box => {
+    box.addEventListener('click', () => {
+        boxes.forEach(b => b.classList.remove('selected'));
+        fetchNews(box.innerHTML);
         box.classList.add('selected');
-    })
-})
-
-const image=document.getElementById("image");
-
-image.addEventListener('click',()=> fetchNews("India"));
-image.addEventListener('click',()=>{
-    boxes.forEach((box)=>{
-        box.classList.remove('selected');
     });
+});
+
+image.addEventListener('click', () => {
+    fetchNews("India");
+    boxes.forEach(box => box.classList.remove('selected'));
 });
