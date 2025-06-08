@@ -5,14 +5,13 @@ const cardsContainer = document.getElementById('card-container');
 const template = document.getElementById('card-template');
 const image = document.getElementById("image");
 
-const url = 'https://newsapi.org/v2/everything?q=';
-const api_key = "7d64ae4c10354faa9e62a2e3ef04b522";
+const SERVERLESS_API_URL = '/api/news?query=';  // Your new backend endpoint
 
 window.addEventListener('load', () => fetchNews("India"));
 
 async function fetchNews(query) {
     try {
-        const res = await fetch(`${url}${encodeURIComponent(query)}&apiKey=${api_key}`);
+        const res = await fetch(`${SERVERLESS_API_URL}${encodeURIComponent(query)}`);
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -67,7 +66,6 @@ function fillDataInCard(cardClone, article) {
 search_button.addEventListener('click', () => {
     const query = input.value.trim() || "India";
     fetchNews(query);
-
     boxes.forEach(box => box.classList.remove('selected'));
 });
 
