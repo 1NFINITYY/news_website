@@ -1,3 +1,4 @@
+// DOM Elements
 const boxes = document.querySelectorAll('.select');
 const search_button = document.querySelector('#search-button');
 const input = document.getElementById("input");
@@ -5,21 +6,17 @@ const cardsContainer = document.getElementById('card-container');
 const template = document.getElementById('card-template');
 const image = document.getElementById("image");
 
-const SERVERLESS_API_URL = '/api/news?query=';  // Your new backend endpoint
-
+// Load default news on page load
 window.addEventListener('load', () => fetchNews("India"));
 
+// Fetch news from your Vercel serverless function
 async function fetchNews(query) {
     try {
-        const res = await fetch(`${SERVERLESS_API_URL}${encodeURIComponent(query)}`);
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        const res = await fetch(`/api/news?query=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        console.log("API response:", data);
 
         if (!data.articles || !Array.isArray(data.articles)) {
-            console.error("No articles found in API response", data);
             cardsContainer.innerHTML = `<p>No news found for "${query}"</p>`;
             return;
         }
@@ -31,6 +28,7 @@ async function fetchNews(query) {
     }
 }
 
+// Bind the news data to the UI
 function bindData(articles) {
     cardsContainer.innerHTML = "";
 
@@ -42,6 +40,7 @@ function bindData(articles) {
     });
 }
 
+// Fill one card with article data
 function fillDataInCard(cardClone, article) {
     const newsImg = cardClone.querySelector("#news-img");
     const newsTitle = cardClone.querySelector("#news-title");
@@ -63,12 +62,14 @@ function fillDataInCard(cardClone, article) {
     });
 }
 
+// Handle search button click
 search_button.addEventListener('click', () => {
     const query = input.value.trim() || "India";
     fetchNews(query);
     boxes.forEach(box => box.classList.remove('selected'));
 });
 
+// Handle category click
 boxes.forEach(box => {
     box.addEventListener('click', () => {
         boxes.forEach(b => b.classList.remove('selected'));
@@ -77,6 +78,7 @@ boxes.forEach(box => {
     });
 });
 
+// Handle logo click (reset to default)
 image.addEventListener('click', () => {
     fetchNews("India");
     boxes.forEach(box => box.classList.remove('selected'));
